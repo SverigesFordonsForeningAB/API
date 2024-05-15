@@ -89,6 +89,117 @@ namespace SverigesFordonsFörening
                 await context.SaveChangesAsync();
                 return Results.Ok($"Customer with ID: {id} deleted");
             });
+
+
+            //Return all car
+            app.MapGet("/car", async (ApplicationDbContext context) =>
+            {
+                var car = await context.Cars.ToListAsync();
+                if (car.Count == 0)
+                {
+                    return Results.NotFound("car not found");
+                }
+                return Results.Ok(car);
+            });
+            //Create a new car
+            app.MapPost("/car", async (Car car, ApplicationDbContext context) =>
+            {
+                context.Cars.Add(car);
+                await context.SaveChangesAsync();
+                return Results.Created($"/car/{car.CarId}", car);
+
+            });
+            //Get car id
+            app.MapGet("/car{id:int}", async (int id, ApplicationDbContext context) =>
+            {
+                var car = await context.Cars.FindAsync(id);
+                if (car == null)
+                {
+                    return Results.NotFound("car not found");
+                }
+                return Results.Ok(car);
+            });
+            //Edit a car
+            app.MapPut("/car/{id:int}", async (int id, Car uppdateCar, ApplicationDbContext context) =>
+            {
+                var car = await context.Cars.FindAsync(id);
+                if (car == null)
+                {
+                    return Results.NotFound("car not found");
+                }
+                car.Brand = uppdateCar.Brand;
+                car.Model = uppdateCar.Model;
+                car.CarPrice = uppdateCar.CarPrice;
+              
+                return Results.Ok(car);
+            });
+            //Delete car by id
+            app.MapDelete("/car/{id:int}", async (int id, ApplicationDbContext context) =>
+            {
+                var car = await context.Cars.FindAsync(id);
+                if (car == null)
+                {
+                    return Results.NotFound("car not found");
+                }
+                context.Cars.Remove(car);
+                await context.SaveChangesAsync();
+                return Results.Ok($"Car with ID: {id} deleted");
+            });
+
+            //Return all motorcycle
+            app.MapGet("/motorcycle", async (ApplicationDbContext context) =>
+            {
+                var motorcycle = await context.Motorcycles.ToListAsync();
+                if (motorcycle.Count == 0)
+                {
+                    return Results.NotFound("motorcycle not found");
+                }
+                return Results.Ok(motorcycle);
+            });
+            //Create a new motorcycle
+            app.MapPost("/motorcycle", async (Motorcycle motorcycle, ApplicationDbContext context) =>
+            {
+                context.Motorcycles.Add(motorcycle);
+                await context.SaveChangesAsync();
+                return Results.Created($"/motorcycle/{motorcycle.MotorcycleId}", motorcycle);
+
+            });
+            //Get motorcycle id
+            app.MapGet("/motorcycle{id:int}", async (int id, ApplicationDbContext context) =>
+            {
+                var motorcycle = await context.Motorcycles.FindAsync(id);
+                if (motorcycle == null)
+                {
+                    return Results.NotFound("motorcycle not found");
+                }
+                return Results.Ok(motorcycle);
+            });
+            //Edit a motorcycle
+            app.MapPut("/motorcycle/{id:int}", async (int id, Motorcycle uppdateMotorcycle, ApplicationDbContext context) =>
+            {
+                var motorcycle = await context.Motorcycles.FindAsync(id);
+                if (motorcycle == null)
+                {
+                    return Results.NotFound("motorcycle not found");
+                }
+                motorcycle.Brand = uppdateMotorcycle.Brand;
+                motorcycle.Model = uppdateMotorcycle.Model;
+                motorcycle.MotorcyclePrice = uppdateMotorcycle.MotorcyclePrice;
+
+                return Results.Ok(motorcycle);
+            });
+            //Delete motorcycle by id
+            app.MapDelete("/motorcycle/{id:int}", async (int id, ApplicationDbContext context) =>
+            {
+                var motorcycle = await context.Motorcycles.FindAsync(id);
+                if (motorcycle == null)
+                {
+                    return Results.NotFound("motorcycle not found");
+                }
+                context.Motorcycles.Remove(motorcycle);
+                await context.SaveChangesAsync();
+                return Results.Ok($"motorcycle with ID: {id} deleted");
+            });
             app.Run();
         }
     }

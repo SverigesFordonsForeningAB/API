@@ -13,11 +13,11 @@ namespace SverigesFordonsFörening.Data
         public Customer Customer { get; set; }
 
         [ForeignKey("Cars")]
-        public int FkCarId { get; set; }
+        public int? FkCarId { get; set; }
         public Car? Cars { get; set; }
 
         [ForeignKey("Motorcycles")]
-        public int FkMotorcycleId { get; set; }
+        public int? FkMotorcycleId { get; set; }
         public Motorcycle? Motorcycles { get; set; }
     }
 }

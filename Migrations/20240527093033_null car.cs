@@ -5,7 +5,7 @@
 namespace SverigesFordonsFörening.Migrations
 {
     /// <inheritdoc />
-    public partial class newmigration : Migration
+    public partial class nullcar : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,8 +65,8 @@ namespace SverigesFordonsFörening.Migrations
                     OrderId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FkCustomerId = table.Column<int>(type: "int", nullable: false),
-                    FkCarId = table.Column<int>(type: "int", nullable: false),
-                    FkMotorcycleId = table.Column<int>(type: "int", nullable: false)
+                    FkCarId = table.Column<int>(type: "int", nullable: true),
+                    FkMotorcycleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -75,8 +75,7 @@ namespace SverigesFordonsFörening.Migrations
                         name: "FK_Orders_Cars_FkCarId",
                         column: x => x.FkCarId,
                         principalTable: "Cars",
-                        principalColumn: "CarId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "CarId");
                     table.ForeignKey(
                         name: "FK_Orders_Customers_FkCustomerId",
                         column: x => x.FkCustomerId,
@@ -87,8 +86,7 @@ namespace SverigesFordonsFörening.Migrations
                         name: "FK_Orders_Motorcycles_FkMotorcycleId",
                         column: x => x.FkMotorcycleId,
                         principalTable: "Motorcycles",
-                        principalColumn: "MotorcycleId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "MotorcycleId");
                 });
 
             migrationBuilder.CreateIndex(

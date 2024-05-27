@@ -12,8 +12,8 @@ using SverigesFordonsFörening.Data;
 namespace SverigesFordonsFörening.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240517075718_null key")]
-    partial class nullkey
+    [Migration("20240527093033_null car")]
+    partial class nullcar
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using SverigesFordonsFörening.Data;
 
@@ -10,19 +9,18 @@ namespace SverigesFordonsFörening
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Konfigurera DbContext med SQL Server
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Add services to the container.
-
+            // Lägg till tjänster i containern
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Konfigurera HTTP-request pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -30,247 +28,221 @@ namespace SverigesFordonsFörening
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
 
             ////////////////////////////// CUSTOMERS ///////////////////////////////////////
+
+            // Returnera alla kunder
             app.MapGet("/customers", async (ApplicationDbContext context) =>
             {
                 var customers = await context.Customers.ToListAsync();
-                if (customers.Count == 0)
-                {
-                    return Results.NotFound("ingen kunder hittades");
-                }
-                return Results.Ok(customers);
+                return customers.Count == 0 ? Results.NotFound("Inga kunder hittades") : Results.Ok(customers);
             });
-            //Create a new customer
-            app.MapPost("/customer", async (Customer customer, ApplicationDbContext context) =>
-             {
-                 context.Customers.Add(customer);
-                 await context.SaveChangesAsync();
-                 return Results.Created($"/customers/{customer.CustomerId}", customer);
 
-             });
-            //Get customerby id
-            app.MapGet("/customer{id:int}", async (int id, ApplicationDbContext context) =>
+            // Skapa en ny kund
+            app.MapPost("/customer", async (Customer customer, ApplicationDbContext context) =>
+            {
+                context.Customers.Add(customer);
+                await context.SaveChangesAsync();
+                return Results.Created($"/customers/{customer.CustomerId}", customer);
+            });
+
+            // Hämta kund efter id
+            app.MapGet("/customer/{id:int}", async (int id, ApplicationDbContext context) =>
             {
                 var customer = await context.Customers.FindAsync(id);
-                if(customer == null)
-                {
-                    return Results.NotFound("customer not found");
-                }
-                return Results.Ok(customer);
+                return customer == null ? Results.NotFound("Kund hittades inte") : Results.Ok(customer);
             });
-            //Edit a customer
-            app.MapPut("/customer/{id:int}", async (int id, Customer uppdateCustomer, ApplicationDbContext context) =>
+
+            // Uppdatera en kund
+            app.MapPut("/customer/{id:int}", async (int id, Customer updateCustomer, ApplicationDbContext context) =>
             {
                 var customer = await context.Customers.FindAsync(id);
                 if (customer == null)
                 {
-                    return Results.NotFound("customer not found");
+                    return Results.NotFound("Kund hittades inte");
                 }
-                customer.FirstName = uppdateCustomer.FirstName;
-                customer.LastName = uppdateCustomer.LastName;
-                customer.Email = uppdateCustomer.Email;
-                customer.Address = uppdateCustomer.Address;
-                customer.Phone = uppdateCustomer.Phone;
-                customer.SocialSecurityNumber = uppdateCustomer.SocialSecurityNumber;
+
+                customer.FirstName = updateCustomer.FirstName;
+                customer.LastName = updateCustomer.LastName;
+                customer.Email = updateCustomer.Email;
+                customer.Address = updateCustomer.Address;
+                customer.Phone = updateCustomer.Phone;
+                customer.SocialSecurityNumber = updateCustomer.SocialSecurityNumber;
                 await context.SaveChangesAsync();
                 return Results.Ok(customer);
             });
-            //Delete Customer by id
+
+            // Ta bort en kund efter id
             app.MapDelete("/customer/{id:int}", async (int id, ApplicationDbContext context) =>
             {
                 var customer = await context.Customers.FindAsync(id);
                 if (customer == null)
                 {
-                    return Results.NotFound("customer not found");
+                    return Results.NotFound("Kund hittades inte");
                 }
                 context.Customers.Remove(customer);
                 await context.SaveChangesAsync();
-                return Results.Ok($"Customer with ID: {id} deleted");
+                return Results.Ok($"Kund med ID: {id} raderad");
             });
-
 
             ////////////////////////////// CARS ///////////////////////////////////////
+
+            // Returnera alla bilar
             app.MapGet("/cars", async (ApplicationDbContext context) =>
             {
-                var car = await context.Cars.ToListAsync();
-                if (car.Count == 0)
-                {
-                    return Results.NotFound("car not found");
-                }
-                return Results.Ok(car);
+                var cars = await context.Cars.ToListAsync();
+                return cars.Count == 0 ? Results.NotFound("Inga bilar hittades") : Results.Ok(cars);
             });
-            //Create a new car
+
+            // Skapa en ny bil
             app.MapPost("/car", async (Car car, ApplicationDbContext context) =>
             {
                 context.Cars.Add(car);
                 await context.SaveChangesAsync();
-                return Results.Created($"/car/{car.CarId}", car);
+                return Results.Created($"/cars/{car.CarId}", car);
+            });
 
+            // Hämta bil efter id
+            app.MapGet("/car/{id:int}", async (int id, ApplicationDbContext context) =>
+            {
+                var car = await context.Cars.FindAsync(id);
+                return car == null ? Results.NotFound("Bil hittades inte") : Results.Ok(car);
             });
-            //Get car id
-            app.MapGet("/car{id:int}", async (int id, ApplicationDbContext context) =>
+
+            // Uppdatera en bil
+            app.MapPut("/car/{id:int}", async (int id, Car updateCar, ApplicationDbContext context) =>
             {
                 var car = await context.Cars.FindAsync(id);
                 if (car == null)
                 {
-                    return Results.NotFound("car not found");
+                    return Results.NotFound("Bil hittades inte");
                 }
-                return Results.Ok(car);
-            });
-            //Edit a car
-            app.MapPut("/car/{id:int}", async (int id, Car uppdateCar, ApplicationDbContext context) =>
-            {
-                var car = await context.Cars.FindAsync(id);
-                if (car == null)
-                {
-                    return Results.NotFound("car not found");
-                }
-                car.Brand = uppdateCar.Brand;
-                car.Model = uppdateCar.Model;
-                car.CarPrice = uppdateCar.CarPrice;
+
+                car.Brand = updateCar.Brand;
+                car.Model = updateCar.Model;
+                car.CarPrice = updateCar.CarPrice;
                 await context.SaveChangesAsync();
-              
                 return Results.Ok(car);
             });
-            //Delete car by id
+
+            // Ta bort en bil efter id
             app.MapDelete("/car/{id:int}", async (int id, ApplicationDbContext context) =>
             {
                 var car = await context.Cars.FindAsync(id);
                 if (car == null)
                 {
-                    return Results.NotFound("car not found");
+                    return Results.NotFound("Bil hittades inte");
                 }
                 context.Cars.Remove(car);
                 await context.SaveChangesAsync();
-                return Results.Ok($"Car with ID: {id} deleted");
+                return Results.Ok($"Bil med ID: {id} raderad");
             });
-
 
             ////////////////////////////// MOTORCYCLES ///////////////////////////////////////
-            
+
+            // Returnera alla motorcyklar
             app.MapGet("/motorcycles", async (ApplicationDbContext context) =>
             {
-                var motorcycle = await context.Motorcycles.ToListAsync();
-                if (motorcycle.Count == 0)
-                {
-                    return Results.NotFound("motorcycle not found");
-                }
-                return Results.Ok(motorcycle);
+                var motorcycles = await context.Motorcycles.ToListAsync();
+                return motorcycles.Count == 0 ? Results.NotFound("Inga motorcyklar hittades") : Results.Ok(motorcycles);
             });
-            //Create a new motorcycle
+
+            // Skapa en ny motorcykel
             app.MapPost("/motorcycle", async (Motorcycle motorcycle, ApplicationDbContext context) =>
             {
                 context.Motorcycles.Add(motorcycle);
                 await context.SaveChangesAsync();
-                return Results.Created($"/motorcycle/{motorcycle.MotorcycleId}", motorcycle);
+                return Results.Created($"/motorcycles/{motorcycle.MotorcycleId}", motorcycle);
+            });
 
+            // Hämta motorcykel efter id
+            app.MapGet("/motorcycle/{id:int}", async (int id, ApplicationDbContext context) =>
+            {
+                var motorcycle = await context.Motorcycles.FindAsync(id);
+                return motorcycle == null ? Results.NotFound("Motorcykel hittades inte") : Results.Ok(motorcycle);
             });
-            //Get motorcycle id
-            app.MapGet("/motorcycle{id:int}", async (int id, ApplicationDbContext context) =>
+
+            // Uppdatera en motorcykel
+            app.MapPut("/motorcycle/{id:int}", async (int id, Motorcycle updateMotorcycle, ApplicationDbContext context) =>
             {
                 var motorcycle = await context.Motorcycles.FindAsync(id);
                 if (motorcycle == null)
                 {
-                    return Results.NotFound("motorcycle not found");
+                    return Results.NotFound("Motorcykel hittades inte");
                 }
-                return Results.Ok(motorcycle);
-            });
-            //Edit a motorcycle
-            app.MapPut("/motorcycle/{id:int}", async (int id, Motorcycle uppdateMotorcycle, ApplicationDbContext context) =>
-            {
-                var motorcycle = await context.Motorcycles.FindAsync(id);
-                if (motorcycle == null)
-                {
-                    return Results.NotFound("motorcycle not found");
-                }
-                motorcycle.Brand = uppdateMotorcycle.Brand;
-                motorcycle.Model = uppdateMotorcycle.Model;
-                motorcycle.MotorcyclePrice = uppdateMotorcycle.MotorcyclePrice;
+
+                motorcycle.Brand = updateMotorcycle.Brand;
+                motorcycle.Model = updateMotorcycle.Model;
+                motorcycle.MotorcyclePrice = updateMotorcycle.MotorcyclePrice;
                 await context.SaveChangesAsync();
                 return Results.Ok(motorcycle);
             });
-            //Delete motorcycle by id
+
+            // Ta bort en motorcykel efter id
             app.MapDelete("/motorcycle/{id:int}", async (int id, ApplicationDbContext context) =>
             {
                 var motorcycle = await context.Motorcycles.FindAsync(id);
                 if (motorcycle == null)
                 {
-                    return Results.NotFound("motorcycle not found");
+                    return Results.NotFound("Motorcykel hittades inte");
                 }
                 context.Motorcycles.Remove(motorcycle);
                 await context.SaveChangesAsync();
-                return Results.Ok($"motorcycle with ID: {id} deleted");
+                return Results.Ok($"Motorcykel med ID: {id} raderad");
             });
 
             ///////////////////////////// /ORDERS ///////////////////////////////////////
-            //Return all Orders
+
+            // Returnera alla ordrar
             app.MapGet("/orders", async (ApplicationDbContext context) =>
             {
-                var order = await context.Orders.ToListAsync();
-               if(order == null)
-                {
-                    return Results.NotFound("Order not found");
-                }
-                return Results.Ok(order);
+                var orders = await context.Orders.ToListAsync();
+                return orders.Count == 0 ? Results.NotFound("Inga ordrar hittades") : Results.Ok(orders);
             });
 
-            //Create new order
-            /// 
-            /// "orderId": 0,
-            // "fkCustomerId": 2,
-            // "fkCarId": 2,
-            //// "fkMotorcycleId": 2
-           
-
-            //Create order
-            app.MapPost("/order", async (ApplicationDbContext context, Order order) =>
+            // Skapa en ny order
+            app.MapPost("/order", async (Order order, ApplicationDbContext context) =>
             {
                 context.Orders.Add(order);
                 await context.SaveChangesAsync();
-                if(order == null)
-                {
-                    return Results.NotFound("Order not found");
-                }
-                return Results.Created($"/order/{order.OrderId}",order);
+                return Results.Created($"/orders/{order.OrderId}", order);
             });
-            //Get a order by id
-            app.MapPost("/order{id:int}", async (int id, ApplicationDbContext context) =>
+
+            // Hämta order efter id
+            app.MapGet("/order/{id:int}", async (int id, ApplicationDbContext context) =>
             {
                 var order = await context.Orders.FindAsync(id);
-                if(order == null)
-                {
-                    return Results.NotFound("Order not found");
-                }
-                return Results.Ok(order);
+                return order == null ? Results.NotFound("Order hittades inte") : Results.Ok(order);
             });
-            //Edit an order
-            app.MapPut("/order{id:int}", async (int id, Order updateOrder, ApplicationDbContext context) =>
+
+            // Uppdatera en order
+            app.MapPut("/order/{id:int}", async (int id, Order updateOrder, ApplicationDbContext context) =>
             {
                 var order = await context.Orders.FindAsync(id);
-                if(order == null)
+                if (order == null)
                 {
-                    return Results.NotFound("order not found");
+                    return Results.NotFound("Order hittades inte");
                 }
+
                 order.FkCustomerId = updateOrder.FkCustomerId;
                 order.FkCarId = updateOrder.FkCarId;
                 order.FkMotorcycleId = updateOrder.FkMotorcycleId;
                 await context.SaveChangesAsync();
                 return Results.Ok(order);
             });
-            //Delete Order
-            app.MapDelete("/order{id:int}", async (int id, ApplicationDbContext context) =>
+
+            // Ta bort en order efter id
+            app.MapDelete("/order/{id:int}", async (int id, ApplicationDbContext context) =>
             {
                 var order = await context.Orders.FindAsync(id);
-                if(order == null)
+                if (order == null)
                 {
-                    return Results.NotFound("order not found");
+                    return Results.NotFound("Order hittades inte");
                 }
                 context.Orders.Remove(order);
                 await context.SaveChangesAsync();
-                return Results.Ok($"Order with id {id} deleted");
+                return Results.Ok($"Order med ID: {id} raderad");
             });
 
             app.Run();

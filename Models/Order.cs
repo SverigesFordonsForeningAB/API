@@ -9,7 +9,7 @@ namespace SverigesFordonsFörening.Data
         public int OrderId { get; set; }
 
         [ForeignKey("Customer")]
-        public int FkCustomerId { get; set; }
+        public int? FkCustomerId { get; set; }
         public Customer? Customer { get; set; }
 
         [ForeignKey("Cars")]

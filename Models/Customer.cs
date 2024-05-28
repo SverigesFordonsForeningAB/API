@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SverigesFordonsFörening.Data
 {
@@ -14,6 +15,7 @@ namespace SverigesFordonsFörening.Data
         public string Phone { get; set; }
         [Required]
         public string SocialSecurityNumber { get; set; }
+        [JsonIgnore]
         public ICollection<Order> Orders { get; set; }
     }
 }

@@ -1,5 +1,9 @@
+
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SverigesFordonsFörening.Data;
+using System.Text.Json.Serialization;
 
 namespace SverigesFordonsFörening
 {
@@ -13,8 +17,16 @@ namespace SverigesFordonsFörening
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            
             // Lägg till tjänster i containern
-            builder.Services.AddControllers();
+            /*builder.Services.AddControllers();*/
+
+            // Add services to the container.
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+            });
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -194,11 +206,30 @@ namespace SverigesFordonsFörening
 
             ///////////////////////////// /ORDERS ///////////////////////////////////////
 
-            // Returnera alla ordrar
+
             app.MapGet("/orders", async (ApplicationDbContext context) =>
             {
-                var orders = await context.Orders.ToListAsync();
-                return orders.Count == 0 ? Results.NotFound("Inga ordrar hittades") : Results.Ok(orders);
+                try
+                {
+                    var orders = await context.Orders
+                        .Include(o => o.Customer)
+                        .Include(o => o.Cars)
+                        .Include(o => o.Motorcycles)
+                        .ToListAsync();
+
+                    if (orders.Count == 0)
+                    {
+                        return Results.NotFound("Inga ordrar hittades");
+                    }
+
+                    return Results.Ok(orders);
+                }
+                catch (Exception ex)
+                {
+                    // Logga felet
+                    Console.WriteLine($"Ett fel uppstod: {ex.Message}");
+                    return Results.Problem("Ett fel uppstod vid hämtning av ordrar");
+                }
             });
 
             // Skapa en ny order
